@@ -1,4 +1,4 @@
-name: portable-release-actions-workflow
+name: vscode-tunnel-actions-workflow
 on:
   push:
     # Sequence of patterns matched against refs/tags
@@ -13,57 +13,13 @@ jobs:
   build:
     name: Create Release
     runs-on: ubuntu-latest
-    env:
-      # targetZip: laragon-php-8.0.0-mariadb-10.11.10-portable-${{ github.ref_name }}.zip
-      targetZip: laragon-php-8.4.0-mariadb-10.11.10-portable-${{ github.ref_name }}.zip
-      laragonVersion: 6.0.0
     steps:
       - uses: actions/checkout@v4
       
-      - name: installer
+      - name: install
         shell: bash
         run: |
           curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' --output vscode_cli.tar.gz && \
-          tar -xf vscode_cli.tar.gz
-
-      - shell: cmd
-        run: |
-          cd laragon\bin\php\ &&^
-          rmdir /s /q php-5.4.9-nts-Win32-VC9-x86 &&^
-          dir
-
-      - shell: cmd
-        run: |
-          cd laragon\bin\mysql\ &&^
-          rmdir /s /q mysql-5.1.72-win32 &&^
-          dir
-
-      # - shell: cmd
-      #   run: |
-      #     curl https://windows.php.net/downloads/releases/archives/php-8.0.0-Win32-vs16-x64.zip -L --output php-8.0.0-Win32-vs16-x64.zip &&^
-      #     7z.exe x php-8.0.0-Win32-vs16-x64.zip -o"laragon\bin\php\php-8.0.0-Win32-vs16-x64"
-
-      - shell: cmd
-        run: |
-          curl https://windows.php.net/downloads/releases/archives/php-8.4.0-Win32-vs17-x64.zip -L -O -J &&^
-          7z.exe x php-8.4.0-Win32-vs17-x64.zip -o"laragon\bin\php\php-8.4.0-Win32-vs17-x64"
-
+          tar -xf vscode_cli.tar.gz && \
+          sudo chmod +x ./code
           
-      - shell: cmd
-        run: |
-          curl https://archive.mariadb.org/mariadb-10.11.10/winx64-packages/mariadb-10.11.10-winx64.zip -L -O -J &&^
-          7z.exe x mariadb-10.11.10-winx64.zip -o"laragon\bin\mysql"
-          
-      - name: Archive Release
-        uses: thedoctor0/zip-release@master
-        with:
-          type: 'zip'
-          directory: "laragon"
-          filename: "${{ env.targetZip }}"
-          
-      - name: Release prebuilt
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "laragon/${{ env.targetZip }}"
-          allowUpdates: true
-          token: ${{ secrets.GITHUB_TOKEN }}
